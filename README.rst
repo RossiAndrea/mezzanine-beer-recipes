@@ -16,16 +16,16 @@ Features
 Installation
 ============
 
-* Run ``pip install -U https://github.com/tjetzinger/mezzanine-recipes/tarball/master`` (or, if you want to hack on mezzanine-recipes, clone it and run ``pip install -e path/to/repo``)
+* Run ``pip install -U https://github.com/RossiAndrea/mezzanine-beer-recipes/tarball/master`` (or, if you want to hack on mezzanine-beer-recipes, clone it and run ``pip install -e path/to/repo``)
 * Install the Mezzanine CMS
-* Add ``"mezzanine_recipes"`` followed by ``"tastypie"`` on top of your ``INSTALLED_APPS``
-* Migrate your database with ``python manage.py migrate mezzanine_recipes``
+* Add ``"mezzanine_beer_recipes"`` followed by ``"tastypie"`` on top of your ``INSTALLED_APPS``
+* Migrate your database with ``python manage.py migrate mezzanine_beer_recipes``
 * Install fixtures with ``python manage.py loaddata mezzanine_required.json``
 * To enable Recipe-Blog and REST API put following code to your urls.py::
 
     from mezzanine.conf import settings
     from tastypie.api import Api
-    from mezzanine_recipes.api import *
+    from mezzanine_beer_recipes.api import *
 
     v1_api = Api(api_name='v1')
     v1_api.register(CategoryResource())
@@ -43,7 +43,7 @@ Installation
 
     urlpatterns = patterns("",
         ("^api/", include(v1_api.urls)),
-        ("^%s/" % settings.BLOG_SLUG, include("mezzanine_recipes.urls")),
+        ("^%s/" % settings.BLOG_SLUG, include("mezzanine_beer_recipes.urls")),
         ...
 
 Be sure to place these urlpatterns at the top of the section.  Of course, don't place them below 'mezzanine.urls' as the documentation directs.
@@ -62,7 +62,7 @@ Creating Templates
 
 The template for a Recipe blog post is ``templates/recipe/blog_post_detail.html``.
 
-The Recipe object is available at ``mezzanine_recipes.recipe``. It has the following properties:
+The Recipe object is available at ``mezzanine_beer_recipes.recipe``. It has the following properties:
 
 * Periods and times: *WorkingHours*, *CookingTime*, *RestPeriod*
 * Cooking info: *ingredients*, *portions*, *difficulty*, *categories*
