@@ -1,8 +1,8 @@
 =================
-mezzanine-recipes
+mezzanine-beer-recipes
 =================
 
-This plugin gives you a "Recipe" blog post type for your Mezzanine sites.
+A convenient plugin gives you a "Beer Recipe" blog post type for your Mezzanine sites, based on tjetzinger's "mezzanine-recipes" modified to work with Mezzanine 1.4.7 and newer version of Sout, uuid and django-tastypie.
 
 Features
 ========
