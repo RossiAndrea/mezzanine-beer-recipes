@@ -1,0 +1,30 @@
+[
+  {
+    "model": "mezzanine_beer_recipes.Ingredient_Type",
+    "pk": 1,
+    "fields": {
+      "type": "Malto"
+    }
+  },
+  {
+    "model": "mezzanine_beer_recipes.Ingredient_Type",
+    "pk": 2,
+    "fields": {
+      "type": "Luppolo"
+    }
+  },
+  {
+    "model": "mezzanine_beer_recipes.Ingredient_Type",
+    "pk": 3,
+    "fields": {
+      "type": "Lievito"
+    }
+  },
+  {
+    "model": "mezzanine_beer_recipes.Ingredient_Type",
+    "pk": 4,
+    "fields": {
+      "type": "Zuccheri e Aromi"
+    }
+  }
+]
