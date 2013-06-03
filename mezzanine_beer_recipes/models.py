@@ -100,14 +100,69 @@ class BlogPost(BlogProxy):
         ordering = ("-publish_date",)
 
 
+class Ingredient_Type(models.Model):
+    type = models.CharField(max_length=50)
+
+    def __unicode__(self):
+        return u"%s" % self.type
+
+
+class Recipe_Ingredients(models.Model):
+    recipe = models.ForeignKey("Recipe")
+    ingredient = models.ForeignKey("Ingredient")
+    quantity = models.IntegerField(help_text="(opzionale) Inserire qui il peso in grammi.",
+                                   null=True, blank=True)
+    measure = models.CharField(max_length=2, choices=fields.MEASURES, null=True, blank=True)
+    timing = models.IntegerField(help_text="(opzionale) Inserire qui il momento di inserimento in bollitura in minuti",
+                                 null=True, blank=True, default=0)
+
+
+class Ingredient(Orderable):
+    """
+    Provides ingredient fields for managing recipe content and making
+    it searchable.
+    """
+    ingredient = models.CharField(_("Ingredient"), max_length=100)
+    note = models.CharField(_("Note"), max_length=200, blank=True, null=True)
+    type = models.ForeignKey(Ingredient_Type)
+
+    def __unicode__(self):
+        _ingredient = u'%s' % (self.ingredient)
+
+        if self.unit:
+            _ingredient = u'%s %s' % (self.get_unit_display(), _ingredient)
+
+        if self.quantity:
+            _ingredient = u'%s %s' % (self.quantity, _ingredient)
+
+        if len(self.note):
+           _ingredient = u'%s - %s' % (_ingredient, self.note)
+
+        return _ingredient
+
+    class Meta:
+        verbose_name = _("Ingredient")
+        verbose_name_plural = _("Ingredients")
+
+
 class Recipe(BlogProxy):
     """
     Implements the recipe type of page with all recipe fields.
     """
     summary = models.TextField(_("Summary"), blank=True, null=True)
-    portions = models.IntegerField(_("Portions"), blank=True, null=True)
+
+    original_gravity = models.IntegerField(max_length=4) 
+    final_gravity = models.IntegerField(max_length=4) 
+    ibu_bitter = models.IntegerField(max_length=2) 
+    color = models.IntegerField(max_length=1, choices=fields.SRM_CHART,
+                                help_text="Inserire il valore del colore nella SRM CHART")       
+    alchol = models.DecimalField(decimal_places=1, max_digits=3)
+    liters = models.IntegerField(max_length=3, choices=fields.LITERS,
+                                 default=25)
+
     difficulty = models.IntegerField(_("Difficulty"), choices=fields.DIFFICULTIES, blank=True, null=True)
     source = models.URLField(_("Source"), blank=True, null=True, help_text=_("URL of the source recipe"))
+    ingredients = ingredients = models.ManyToManyField(Ingredient, through="Recipe_Ingredients")
 
     template_dir = "recipe/"
     secondary = BlogManager()
@@ -139,36 +194,6 @@ class Recipe(BlogProxy):
         verbose_name = _("Recipe")
         verbose_name_plural = _("Recipes")
         ordering = ("-publish_date",)
-
-
-class Ingredient(Orderable):
-    """
-    Provides ingredient fields for managing recipe content and making
-    it searchable.
-    """
-    recipe = models.ForeignKey("Recipe", verbose_name=_("Recipe"), related_name="ingredients")
-    quantity = models.CharField(_("Quantity"), max_length=10, blank=True, null=True)
-    unit = models.IntegerField(_("Unit"), choices=fields.UNITS, blank=True, null=True)
-    ingredient = models.CharField(_("Ingredient"), max_length=100)
-    note = models.CharField(_("Note"), max_length=200, blank=True, null=True)
-
-    def __unicode__(self):
-        _ingredient = u'%s' % (self.ingredient)
-
-        if self.unit:
-            _ingredient = u'%s %s' % (self.get_unit_display(), _ingredient)
-
-        if self.quantity:
-            _ingredient = u'%s %s' % (self.quantity, _ingredient)
-
-        if len(self.note):
-           _ingredient = u'%s - %s' % (_ingredient, self.note)
-
-        return _ingredient
-
-    class Meta:
-        verbose_name = _("Ingredient")
-        verbose_name_plural = _("Ingredients")
 
 
 class Period(models.Model):
