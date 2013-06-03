@@ -4,7 +4,7 @@ from mezzanine.conf import settings
 
 
 # Blog patterns.
-urlpatterns = patterns("mezzanine_recipes.views",
+urlpatterns = patterns("mezzanine_beer_recipes.views",
     url("^%s/(?P<year>\d{4})/(?P<month>\d{1,2})/(?P<day>\d{1,2})/(?P<slug>.*)/$" % settings.RECIPES_SLUG, "blog_post_detail", {'template': 'recipe_detail.html',}, name="blog_post_detail_date"),
     url("^%s/(?P<slug>.*)/$" % settings.RECIPES_SLUG, "blog_post_detail", {'template': 'recipe_detail.html',}, name="blog_post_detail"),
     url("^%s/(?P<year>\d{4})/(?P<month>\d{1,2})/(?P<day>\d{1,2})/(?P<slug>.*)/$" % settings.ARTICLES_SLUG, "blog_post_detail", name="blog_post_detail_date"),
