@@ -117,7 +117,7 @@ class Recipe_Ingredients(models.Model):
                                  null=True, blank=True, default=0)
 
 
-class Ingredient(Orderable):
+class Ingredient(models.Model):
     """
     Provides ingredient fields for managing recipe content and making
     it searchable.
@@ -127,19 +127,7 @@ class Ingredient(Orderable):
     type = models.ForeignKey(Ingredient_Type)
 
     def __unicode__(self):
-        _ingredient = u'%s' % (self.ingredient)
-
-        if self.unit:
-            _ingredient = u'%s %s' % (self.get_unit_display(), _ingredient)
-
-        if self.quantity:
-            _ingredient = u'%s %s' % (self.quantity, _ingredient)
-
-        if len(self.note):
-           _ingredient = u'%s - %s' % (_ingredient, self.note)
-
-        return _ingredient
-
+        return u"%s: %s" % (self.type.type.upper(), self.ingredient)
     class Meta:
         verbose_name = _("Ingredient")
         verbose_name_plural = _("Ingredients")
