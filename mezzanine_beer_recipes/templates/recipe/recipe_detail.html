@@ -1,136 +1,127 @@
-{% extends "blog/blog_post_detail.html" %}
+{% extends "recipe/recipe_list.html" %}
+{% load mezzanine_tags comment_tags keyword_tags rating_tags i18n future disqus_tags %}
 
-{% load mezzanine_tags i18n %}
+{% block meta_title %}{{ recipe.meta_title }}{% endblock %}
 
-{% block blog_post_detail_featured_image %}
-    {% if blog_post.featured_image %}
-        <p><img src="{{ MEDIA_URL }}{% thumbnail blog_post.featured_image 720 0 %}"></p>
-    {% endif %}
+{% block meta_keywords %}{% metablock %}
+{% keywords_for recipe as tags %}
+{% for tag in tags %}{% if not forloop.first %}, {% endif %}{{ tag }}{% endfor %}
+{% endmetablock %}{% endblock %}
+
+{% block meta_description %}{% metablock %}
+{{ recipe.description }}
+{% endmetablock %}{% endblock %}
+
+{% block title %}
+{% editable recipe.title %}{{ recipe.title }}{% endeditable %}
 {% endblock %}
 
-{% block extension_2 %}
+{% block breadcrumb_menu %}
 {{ block.super }}
+<li class="active">{{ recipe.title }}</li>
+{% endblock %}
 
-{% block recipe_hero %}
-<div class="hero-unit">
+{% block main %}
 
-    {% block recipe_summary %}
-    {% if blog_post.summary %}
-        {% editable blog_post.summary %}<p>{{ blog_post.summary }}</p>{% endeditable %}
+{% block recipe_detail_postedby %}
+{% editable recipe.publish_date %}
+<h6>
+    {% trans "Posted by" %}:
+    {% with recipe.user as author %}
+    <a href="{% url "recipe_list_author" author %}">{{ author.get_full_name|default:author.username }}</a>
+    {% endwith %}
+    {% blocktrans with sometime=recipe.publish_date|timesince %}{{ sometime }} ago{% endblocktrans %}
+</h6>
+{% endeditable %}
+{% endblock %}
+{% block recipe_detail_commentlink %}
+<p>
+    {% if recipe.allow_comments %}
+        {% if settings.COMMENTS_DISQUS_SHORTNAME %}
+            (<a href="{{ recipe.get_absolute_url }}#disqus_thread"
+                data-disqus-identifier="{% disqus_id_for recipe %}">{% spaceless %}
+                {% trans "Comments" %}
+            {% endspaceless %}</a>)
+        {% else %}(<a href="#comments">{% spaceless %}
+            {% blocktrans count recipe.comments_count as comments_count %}1 comment{% plural %}{{ comments_count }} comments{% endblocktrans %}
+            {% endspaceless %}</a>)
+        {% endif %}
     {% endif %}
-    {% endblock %}
+</p>
+{% endblock %}
 
-    {% block recipe_ingredients %}
-    {% if blog_post.ingredients.count %}
-        <dl class="dl-horizontal ingredients">
-            <h4><dt>{% trans 'Ingredients' %}:</dt></h4>
-            {% for ingredient in blog_post.ingredients.all %}
-                <dd>{{ ingredient }}</dd>
-            {% endfor %}
-        </dl>
-    {% endif %}
-    {% endblock %}
+{% block recipe_detail_featured_image %}
+{% if settings.BLOG_USE_FEATURED_IMAGE and recipe.featured_image %}
+<p><img src="{{ MEDIA_URL }}{% thumbnail recipe.featured_image 600 0 %}"></p>
+{% endif %}
+{% endblock %}
 
-    {% block recipe_portions %}
-    {% if blog_post.portions %}
-        {% editable blog_post.portions %}
-            <dl class="dl-horizontal">
-                <h4><dt>{% trans 'Portions' %}:</dt></h4>
-                <dd>{{ blog_post.portions }}</dd>
-            </dl>
-        {% endeditable %}
-    {% endif %}
-    {% endblock %}
+{% if settings.COMMENTS_DISQUS_SHORTNAME %}
+{% include "generic/includes/disqus_counts.html" %}
+{% endif %}
 
-    {% block recipe_difficulty %}
-    {% if blog_post.difficulty %}
-        {% editable blog_post.difficulty %}
-            <dl class="dl-horizontal">
-                <h4><dt>{% trans 'Difficulty' %}:</dt></h4>
-                <dd>{{ blog_post.get_difficulty_display }}</dd>
-            </dl>
-        {% endeditable %}
-    {% endif %}
-    {% endblock %}
+{% block recipe_detail_content %}
+{% editable recipe.content %}
+{{ recipe.content|richtext_filter|safe }}
+{% endeditable %}
+{% endblock %}
 
-    {% block recipe_working_hours %}
-    {% if blog_post.working_hours %}
-        <dl class="dl-horizontal">
-            <h4><dt>{% trans 'Working Hours' %}:</dt></h4>
-            <dd>
-                {% if blog_post.working_hours.hours %}
-                    {% blocktrans count hours=blog_post.working_hours.hours %}
-                        {{ hours }} Hour
-                    {% plural %}
-                        {{ hours }} Hours
-                    {% endblocktrans %}
-                {% endif %}
+{% block recipe_detail_keywords %}
+{% keywords_for recipe as tags %}
+{% if tags %}
+{% spaceless %}
+<ul class="unstyled tags">
+    <li>{% trans "Tags" %}:</li>
+    {% for tag in tags %}
+    <li><a href="{% url "recipe_list_tag" tag.slug %}">{{ tag }}</a></li>
+    {% endfor %}
+</ul>
+{% endspaceless %}
+{% endif %}
+{% endblock %}
 
-                {% blocktrans count minutes=blog_post.working_hours.minutes %}
-                    {{ minutes }} Minute
-                {% plural %}
-                    {{ minutes }} Minutes
-                {% endblocktrans %}
-            </dd>
-        </dl>
-    {% endif %}
-    {% endblock %}
+{% rating_for recipe %}
 
-    {% block recipe_cooking_time %}
-    {% if blog_post.cooking_time %}
-        <dl class="dl-horizontal">
-            <h4><dt>{% trans 'Cooking Time' %}:</dt></h4>
-            <dd>
-                {% if blog_post.cooking_time.hours %}
-                    {% blocktrans count hours=blog_post.cooking_time.hours %}
-                        {{ hours }} Hour
-                    {% plural %}
-                        {{ hours }} Hours
-                    {% endblocktrans %}
-                {% endif %}
+{% block recipe_detail_sharebuttons %}
+{% set_short_url_for recipe %}
+<a class="btn small primary share-twitter" target="_blank" href="http://twitter.com/home?status={{ recipe.short_url|urlencode }}%20{{ recipe.title|urlencode }}">{% trans "Share on Twitter" %}</a>
+<a class="btn small primary share-facebook" target="_blank" href="http://facebook.com/sharer.php?u={{ request.build_absolute_uri }}&amp;t={{ recipe.title|urlencode }}">{% trans "Share on Facebook" %}</a>
+{% endblock %}
 
-                {% blocktrans count minutes=blog_post.cooking_time.minutes %}
-                    {{ minutes }} Minute
-                {% plural %}
-                    {{ minutes }} Minutes
-                {% endblocktrans %}
-            </dd>
-        </dl>
-    {% endif %}
-    {% endblock %}
+{% block recipe_previous_next %}
+<ul class="pager">
+{% with recipe.get_previous_by_publish_date as previous %}
+{% if previous %}
+<li class="previous">
+    <a href="{{ previous.get_absolute_url }}">&larr; {{ previous }}</a>
+</li>
+{% endif %}
+{% endwith %}
+{% with recipe.get_next_by_publish_date as next %}
+{% if next %}
+<li class="next">
+    <a href="{{ next.get_absolute_url }}">{{ next }} &rarr;</a>
+</li>
+{% endif %}
+{% endwith %}
+</ul>
+{% endblock %}
 
-    {% block recipe_rest_period %}
-    {% if blog_post.rest_period %}
-        <dl class="dl-horizontal">
-            <h4><dt>{% trans 'Rest Period' %}:</dt></h4>
-            <dd>
-                {% if blog_post.rest_period.days %}
-                    {% blocktrans count days=blog_post.rest_period.days %}
-                        {{ days }} Day
-                    {% plural %}
-                        {{ days }} Days
-                    {% endblocktrans %}
-                {% endif %}
-
-                {% if blog_post.rest_period.hours %}
-                    {% blocktrans count hours=blog_post.rest_period.hours %}
-                        {{ hours }} Hour
-                    {% plural %}
-                        {{ hours }} Hours
-                    {% endblocktrans %}
-                {% endif %}
-
-                {% blocktrans count minutes=blog_post.rest_period.minutes %}
-                    {{ minutes }} Minute
-                {% plural %}
-                    {{ minutes }} Minutes
-                {% endblocktrans %}
-            </dd>
-        </dl>
-    {% endif %}
-    {% endblock %}
-
+{% block recipe_detail_related_posts %}
+{% if recipe.related_posts.all %}
+<div id="related-posts">
+<h3>{% trans 'Related posts' %}</h3>
+<ul class="unstyled">
+{% for post in recipe.related_posts.all %}
+     <li><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></li>
+{% endfor %}
+</ul>
 </div>
-{% endblock %}
+{% endif %}
 {% endblock %}
 
+{% block recipe_detail_comments %}
+{% if recipe.allow_comments %}{% comments_for recipe %}{% endif %}
+{% endblock %}
+
+{% endblock %}

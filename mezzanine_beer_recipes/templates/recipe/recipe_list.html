@@ -137,7 +137,9 @@
 {% endblock %}
 {% endfor %}
 
+{% if recipes %}
 {% pagination_for recipes %}
+{% endif %}
 
 {% if settings.COMMENTS_DISQUS_SHORTNAME %}
 {% include "generic/includes/disqus_counts.html" %}
