@@ -1,3 +1,4 @@
+import datetime
 from django.db import models
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext_lazy as _
@@ -44,8 +45,9 @@ class BlogProxy(MezzanineBlogPost):
     def save(self, *args, **kwargs):
         self.modified_date = now()
         if not self.content_type:
-            self.content_type = ContentType.objects
-            self.content_type = self.content_type.get_for_model(self.__class__)
+            ct = ContentType.objects
+            ct = ct.get_for_model(self.__class__)
+            self.content_type = ct
         super(BlogProxy, self).save(*args, **kwargs)
 
     def as_leaf_class(self):
@@ -99,6 +101,7 @@ class BlogPost(BlogProxy):
         verbose_name = _("Blog post")
         verbose_name_plural = _("Blog posts")
         ordering = ("-publish_date",)
+        app_label = _("Content")
 
 
 class Ingredient_Type(models.Model):
@@ -106,6 +109,11 @@ class Ingredient_Type(models.Model):
 
     def __unicode__(self):
         return u"%s" % self.type
+
+    class Meta:
+        app_label = _("Recipes")
+        verbose_name = _("Ingredient Type")
+        verbose_name_plural = _("Ingredient Types")
 
 
 class Recipe_Ingredients(Orderable):
@@ -120,6 +128,9 @@ class Recipe_Ingredients(Orderable):
                                            "momento di inserimento in "
                                            "bollitura in minuti",
                                  null=True, blank=True, default=0)
+
+    class Meta:
+        app_label = _("Recipes")
 
 
 class Ingredient(models.Model):
@@ -137,6 +148,7 @@ class Ingredient(models.Model):
     class Meta:
         verbose_name = _("Ingredient")
         verbose_name_plural = _("Ingredients")
+        app_label = _("Recipes")
 
 
 class Recipe(BlogProxy):
@@ -190,58 +202,61 @@ class Recipe(BlogProxy):
         verbose_name = _("Recipe")
         verbose_name_plural = _("Recipes")
         ordering = ("-publish_date",)
+        app_label = _("Recipes")
 
 
 class Period(models.Model):
     """
     Provides fields for a period of time
     """
-    hours = models.IntegerField(_("hours"), default=0)
     minutes = models.IntegerField(_("minutes"), default=0)
 
     def __unicode__(self):
-        return "%02d:%02d" % (self.hours, self.minutes)
+        return "%02d:%02d" % str(datetime.timedelta(minutes=
+                                 self.minutes)).split(":")[:2]
 
     class Meta:
         abstract = True
 
 
-class WorkingHours(Period):
+class Mashing(Period):
     """
     Provides working hour fields for cooking a recipe
     """
     recipe = models.OneToOneField("Recipe", verbose_name=_("Recipe"),
-                                  related_name="working_hours")
+                                  related_name="mashing_time")
 
     class Meta:
-        verbose_name = _("working hour")
+        verbose_name = _("maashing")
         verbose_name_plural = verbose_name
+        app_label = _("Recipes")
 
 
-class CookingTime(Period):
+class Boiling(Period):
     """
     Provides cooking time fields for cooking a recipe
     """
     recipe = models.OneToOneField("Recipe", verbose_name=_("Recipe"),
-                                  related_name="cooking_time")
+                                  related_name="boiling_time")
 
     class Meta:
-        verbose_name = _("cooking time")
+        verbose_name = _("boiling")
         verbose_name_plural = verbose_name
+        app_label = _("Recipes")
 
 
-class RestPeriod(Period):
+class Fermentation(models.Model):
     """
     Provides rest time fields for cooking a recipe
     """
     recipe = models.OneToOneField("Recipe", verbose_name=_("Recipe"),
-                                  related_name="rest_period")
+                                  related_name="fermentation_period")
     days = models.IntegerField(_("days"), default=0)
 
     def __unicode__(self):
-        period = super(RestPeriod, self).__unicode__()
-        return "%02d:%s" % (self.days, period)
+        return _("%s days" % self.days)
 
     class Meta:
-        verbose_name = _("rest period")
+        verbose_name = _("fermentation")
         verbose_name_plural = verbose_name
+        app_label = _("Recipes")
