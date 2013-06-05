@@ -125,7 +125,7 @@
     /
     {% if settings.COMMENTS_DISQUS_SHORTNAME %}
     <a href="{{ recipe.get_absolute_url }}#disqus_thread"
-        data-disqus-identifier="{% disqus_id_for blog_post %}">
+        data-disqus-identifier="{% disqus_id_for recipe %}">
         {% trans "Comments" %}
     </a>
     {% else %}
