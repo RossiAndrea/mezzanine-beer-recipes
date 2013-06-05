@@ -16,9 +16,9 @@ class SubclassingQuerySet(QuerySet):
 
     def __getitem__(self, k):
         result = super(SubclassingQuerySet, self).__getitem__(k)
-        if isinstance(result, BlogProxy) :
+        if isinstance(result, BlogProxy):
             return result.as_leaf_class()
-        else :
+        else:
             return result
 
     def __iter__(self):
@@ -31,10 +31,12 @@ class BlogManager(DisplayableManager):
         return SubclassingQuerySet(self.model)
 
 
-
 class BlogProxy(MezzanineBlogPost):
-    content_type = models.ForeignKey(ContentType,editable=False,null=True)
-    modified_date = models.DateTimeField(_("Last Modified"), blank=True, null=True)
+    content_type = models.ForeignKey(ContentType,
+                                     editable=False,
+                                     null=True)
+    modified_date = models.DateTimeField(_("Last Modified"),
+                                         blank=True, null=True)
 
     template_dir = "blog/"
     secondary = BlogManager()
@@ -42,7 +44,8 @@ class BlogProxy(MezzanineBlogPost):
     def save(self, *args, **kwargs):
         self.modified_date = now()
         if not self.content_type:
-            self.content_type = ContentType.objects.get_for_model(self.__class__)
+            self.content_type = ContentType.objects
+            self.content_type = self.content_type.get_for_model(self.__class__)
         super(BlogProxy, self).save(*args, **kwargs)
 
     def as_leaf_class(self):
@@ -87,11 +90,9 @@ class BlogPost(BlogProxy):
             day = str(self.publish_date.day)
             if len(day) == 1:
                 day = "0" + day
-            kwargs.update({
-                "day": day,
-                "month": month,
-                "year": self.publish_date.year,
-                })
+            kwargs.update({"day": day,
+                           "month": month,
+                           "year": self.publish_date.year, })
         return (url_name, (), kwargs)
 
     class Meta:
@@ -107,13 +108,17 @@ class Ingredient_Type(models.Model):
         return u"%s" % self.type
 
 
-class Recipe_Ingredients(models.Model):
+class Recipe_Ingredients(Orderable):
     recipe = models.ForeignKey("Recipe")
     ingredient = models.ForeignKey("Ingredient")
-    quantity = models.IntegerField(help_text="(opzionale) Inserire qui il peso in grammi.",
+    quantity = models.IntegerField(help_text="(opzionale) Inserire qui il peso"
+                                             " in grammi.",
                                    null=True, blank=True)
-    measure = models.CharField(max_length=2, choices=fields.MEASURES, null=True, blank=True)
-    timing = models.IntegerField(help_text="(opzionale) Inserire qui il momento di inserimento in bollitura in minuti",
+    measure = models.CharField(max_length=2, choices=fields.MEASURES,
+                               null=True, blank=True)
+    timing = models.IntegerField(help_text="(opzionale) Inserire qui il "
+                                           "momento di inserimento in "
+                                           "bollitura in minuti",
                                  null=True, blank=True, default=0)
 
 
@@ -128,6 +133,7 @@ class Ingredient(models.Model):
 
     def __unicode__(self):
         return u"%s: %s" % (self.type.type.upper(), self.ingredient)
+
     class Meta:
         verbose_name = _("Ingredient")
         verbose_name_plural = _("Ingredients")
@@ -139,18 +145,23 @@ class Recipe(BlogProxy):
     """
     summary = models.TextField(_("Summary"), blank=True, null=True)
 
-    original_gravity = models.IntegerField(max_length=4) 
-    final_gravity = models.IntegerField(max_length=4) 
-    ibu_bitter = models.IntegerField(max_length=2) 
+    original_gravity = models.IntegerField(max_length=4)
+    final_gravity = models.IntegerField(max_length=4)
+    ibu_bitter = models.IntegerField(max_length=2)
     color = models.IntegerField(max_length=1, choices=fields.SRM_CHART,
-                                help_text="Inserire il valore del colore nella SRM CHART")       
+                                help_text="Inserire il valore del colore nella"
+                                          " SRM CHART")
     alchol = models.DecimalField(decimal_places=1, max_digits=3)
     liters = models.IntegerField(max_length=3, choices=fields.LITERS,
                                  default=25)
 
-    difficulty = models.IntegerField(_("Difficulty"), choices=fields.DIFFICULTIES, blank=True, null=True)
-    source = models.URLField(_("Source"), blank=True, null=True, help_text=_("URL of the source recipe"))
-    ingredients = ingredients = models.ManyToManyField(Ingredient, through="Recipe_Ingredients")
+    difficulty = models.IntegerField(_("Difficulty"),
+                                     choices=fields.DIFFICULTIES,
+                                     blank=True, null=True)
+    source = models.URLField(_("Source"), blank=True, null=True,
+                             help_text=_("URL of the source recipe"))
+    ingredients = models.ManyToManyField(Ingredient,
+                                         through="Recipe_Ingredients")
 
     template_dir = "recipe/"
     secondary = BlogManager()
@@ -171,11 +182,8 @@ class Recipe(BlogProxy):
             day = str(self.publish_date.day)
             if len(day) == 1:
                 day = "0" + day
-            kwargs.update({
-                "day": day,
-                "month": month,
-                "year": self.publish_date.year,
-                })
+            kwargs.update({"day": day, "month": month,
+                           "year": self.publish_date.year, })
         return (url_name, (), kwargs)
 
     class Meta:
@@ -192,7 +200,7 @@ class Period(models.Model):
     minutes = models.IntegerField(_("minutes"), default=0)
 
     def __unicode__(self):
-        return "%02d:%02d" %(self.hours, self.minutes)
+        return "%02d:%02d" % (self.hours, self.minutes)
 
     class Meta:
         abstract = True
@@ -202,7 +210,8 @@ class WorkingHours(Period):
     """
     Provides working hour fields for cooking a recipe
     """
-    recipe = models.OneToOneField("Recipe", verbose_name=_("Recipe"), related_name="working_hours")
+    recipe = models.OneToOneField("Recipe", verbose_name=_("Recipe"),
+                                  related_name="working_hours")
 
     class Meta:
         verbose_name = _("working hour")
@@ -213,7 +222,8 @@ class CookingTime(Period):
     """
     Provides cooking time fields for cooking a recipe
     """
-    recipe = models.OneToOneField("Recipe", verbose_name=_("Recipe"), related_name="cooking_time")
+    recipe = models.OneToOneField("Recipe", verbose_name=_("Recipe"),
+                                  related_name="cooking_time")
 
     class Meta:
         verbose_name = _("cooking time")
@@ -224,12 +234,13 @@ class RestPeriod(Period):
     """
     Provides rest time fields for cooking a recipe
     """
-    recipe = models.OneToOneField("Recipe", verbose_name=_("Recipe"), related_name="rest_period")
+    recipe = models.OneToOneField("Recipe", verbose_name=_("Recipe"),
+                                  related_name="rest_period")
     days = models.IntegerField(_("days"), default=0)
 
     def __unicode__(self):
         period = super(RestPeriod, self).__unicode__()
-        return "%02d:%s" %(self.days, period)
+        return "%02d:%s" % (self.days, period)
 
     class Meta:
         verbose_name = _("rest period")
