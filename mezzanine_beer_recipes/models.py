@@ -101,7 +101,6 @@ class BlogPost(BlogProxy):
         verbose_name = _("Blog post")
         verbose_name_plural = _("Blog posts")
         ordering = ("-publish_date",)
-        app_label = _("Content")
 
 
 class Ingredient_Type(models.Model):
@@ -111,7 +110,6 @@ class Ingredient_Type(models.Model):
         return u"%s" % self.type
 
     class Meta:
-        app_label = _("Recipes")
         verbose_name = _("Ingredient Type")
         verbose_name_plural = _("Ingredient Types")
 
@@ -129,9 +127,6 @@ class Recipe_Ingredients(Orderable):
                                            "bollitura in minuti",
                                  null=True, blank=True, default=0)
 
-    class Meta:
-        app_label = _("Recipes")
-
 
 class Ingredient(models.Model):
     """
@@ -148,7 +143,6 @@ class Ingredient(models.Model):
     class Meta:
         verbose_name = _("Ingredient")
         verbose_name_plural = _("Ingredients")
-        app_label = _("Recipes")
 
 
 class Recipe(BlogProxy):
@@ -184,8 +178,8 @@ class Recipe(BlogProxy):
 
     @models.permalink
     def get_absolute_url(self):
-        url_name = "blog_post_detail"
-        kwargs = {"slug": "%s/%s" % (settings.RECIPES_SLUG, self.slug)}
+        url_name = "recipe_detail"
+        kwargs = {"slug": "%s" % self.slug}
         if settings.BLOG_URLS_USE_DATE:
             url_name = "blog_post_detail_date"
             month = str(self.publish_date.month)
@@ -196,13 +190,13 @@ class Recipe(BlogProxy):
                 day = "0" + day
             kwargs.update({"day": day, "month": month,
                            "year": self.publish_date.year, })
+        print (url_name, (), kwargs)
         return (url_name, (), kwargs)
 
     class Meta:
         verbose_name = _("Recipe")
         verbose_name_plural = _("Recipes")
         ordering = ("-publish_date",)
-        app_label = _("Recipes")
 
 
 class Period(models.Model):
@@ -212,8 +206,8 @@ class Period(models.Model):
     minutes = models.IntegerField(_("minutes"), default=0)
 
     def __unicode__(self):
-        return "%02d:%02d" % str(datetime.timedelta(minutes=
-                                 self.minutes)).split(":")[:2]
+        return "%s" % ":".join(str(datetime.timedelta(minutes=
+                               self.minutes)).split(":")[:2])
 
     class Meta:
         abstract = True
@@ -229,7 +223,6 @@ class Mashing(Period):
     class Meta:
         verbose_name = _("maashing")
         verbose_name_plural = verbose_name
-        app_label = _("Recipes")
 
 
 class Boiling(Period):
@@ -242,7 +235,6 @@ class Boiling(Period):
     class Meta:
         verbose_name = _("boiling")
         verbose_name_plural = verbose_name
-        app_label = _("Recipes")
 
 
 class Fermentation(models.Model):
@@ -259,4 +251,3 @@ class Fermentation(models.Model):
     class Meta:
         verbose_name = _("fermentation")
         verbose_name_plural = verbose_name
-        app_label = _("Recipes")
