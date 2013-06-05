@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-from mezzanine_recipes import __version__
+from mezzanine_beer_recipes import __version__
 
 setup(
     name='mezzanine-beer-recipes',
